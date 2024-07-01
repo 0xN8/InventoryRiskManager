@@ -1,5 +1,5 @@
 from utils import setup
-from config import url, coin, hedge_coin, test_url
+from config import url, coin, hedge_coin, test_url, coin_short
 from trade import trade
 from api import allMids
 
@@ -8,5 +8,5 @@ from api import allMids
 
 def main():
     account, address, track_address, info, exchange = setup(url)
-    trade(info, exchange, coin, hedge_coin, address, track_address)
+    trade(info, exchange, coin, hedge_coin, address, track_address, coin_short)
 main()

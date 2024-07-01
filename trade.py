@@ -37,7 +37,7 @@ def beta(info, hedge_coin, coin):
 
 
 
-def trade(info, exchange, coin, hedge_coin, address, track_address):
+def trade(info, exchange, coin, hedge_coin, address, track_address, coin_short):
 
     while True:
         spot_balances = post_user_spot_tokens(track_address, info)
@@ -52,15 +52,15 @@ def trade(info, exchange, coin, hedge_coin, address, track_address):
                 futes_sz = float(position["position"]['szi'])
                 break
  
-        coin_short = coin.replace("/USDC", "")
         for balance in spot_balances:
             if balance["coin"] == coin_short:
                 spot_sz = float(balance["total"])
                 break
 
-        leverage = round(beta(info, hedge_coin, coin))
+        leverage = round(beta(info, hedge_coin, "PURR/USDC"))
         futes_px, spot_px = allMids(info, hedge_coin, coin)
         spot_value = spot_sz * spot_px
+
 
         cprint(f"Spot Value: {spot_value}", 'light_green', 'on_blue')
         cprint(f"Futures Value: {futes_value}", 'light_green', 'on_blue')
@@ -84,8 +84,8 @@ def trade(info, exchange, coin, hedge_coin, address, track_address):
             cprint(f"Px: {futes_px}", 'light_green', 'on_blue')
             futures_order( exchange, hedge_coin, False, qty, int(futes_px)+1, False, info)
 
-        # Sleep for 2 hours
-        time.sleep(30)
+        # Sleep for seconds
+        time.sleep(5)
         #cancel all open orders
         close_open_orders(exchange, info, address, hedge_coin)
 
