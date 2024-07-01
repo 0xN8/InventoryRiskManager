@@ -7,6 +7,6 @@ from api import allMids
 
 
 def main():
-    account, address, track_address, info, exchange = setup(url)
-    trade(info, exchange, coin, hedge_coin, address, track_address, coin_short)
+    account, acc_address, neu_address, info, exchange = setup(url, prod = True)
+    trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short)
 main()

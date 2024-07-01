@@ -37,11 +37,11 @@ def beta(info, hedge_coin, coin):
 
 
 
-def trade(info, exchange, coin, hedge_coin, address, track_address, coin_short):
+def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short):
 
     while True:
-        spot_balances = post_user_spot_tokens(track_address, info)
-        futures_positions = post_user_futures_summary(address, info)
+        spot_balances = post_user_spot_tokens(acc_address, info)
+        futures_positions = post_user_futures_summary(neu_address, info)
         futes_value = 0
         spot_sz = 0
 
@@ -87,5 +87,5 @@ def trade(info, exchange, coin, hedge_coin, address, track_address, coin_short):
         # Sleep for seconds
         time.sleep(5)
         #cancel all open orders
-        close_open_orders(exchange, info, address, hedge_coin)
+        close_open_orders(exchange, info, neu_address, hedge_coin)
 
