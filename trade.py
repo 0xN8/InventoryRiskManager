@@ -40,6 +40,7 @@ def beta(info, hedge_coin, coin):
 def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short):
 
     while True:
+        time.sleep(0.4)
         spot_balances = post_user_spot_tokens(acc_address, info)
         futures_positions = post_user_futures_summary(neu_address, info)
         futes_value = 0
