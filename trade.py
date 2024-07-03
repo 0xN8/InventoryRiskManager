@@ -72,6 +72,8 @@ def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short
             qty = round((futes_value - leverage * spot_value) / futes_px, 5)
             cprint(f"Qty: {qty}", 'light_green', 'on_blue')
             cprint(f"Px: {futes_px}", 'light_green', 'on_blue')
+            #cancel all open orders and submit new order
+            close_open_orders(exchange, info, neu_address, hedge_coin)
             futures_order( exchange, hedge_coin, True, qty, int(futes_px)-1, True, info)
 
     
@@ -82,10 +84,7 @@ def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short
             qty = round((leverage * spot_value - futes_value) / futes_px, 5)
             cprint(f"Qty: {qty}", 'light_green', 'on_blue')
             cprint(f"Px: {futes_px}", 'light_green', 'on_blue')
+            #cancel all open orders and submit new order
+            close_open_orders(exchange, info, neu_address, hedge_coin)
             futures_order( exchange, hedge_coin, False, qty, int(futes_px)+1, False, info)
-
-        # Sleep for seconds
-        time.sleep(5)
-        #cancel all open orders
-        close_open_orders(exchange, info, neu_address, hedge_coin)
 
