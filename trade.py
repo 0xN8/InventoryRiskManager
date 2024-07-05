@@ -63,6 +63,10 @@ def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short
                 break
 
         leverage = beta(info, hedge_coin, coin)
+
+        if leverage == 0:
+            cprint("Beta is 0, skipping trade", 'white', 'on_red')
+            continue
         futes_px, spot_px = allMids(info, hedge_coin, coin)
         spot_value = spot_sz * spot_px
 
