@@ -13,7 +13,7 @@ def calc_returns(candles):
 
 
 def beta(info, hedge_coin, coin):
-    hedge_candles, spot_candles = candles_snapshot(hedge_coin, coin, "1d", info)
+    hedge_candles, spot_candles = candles_snapshot(info, hedge_coin, coin, "1m")
     hedge_returns = calc_returns(hedge_candles)
     spot_returns = calc_returns(spot_candles)
 
@@ -30,6 +30,10 @@ def beta(info, hedge_coin, coin):
     var_H = np.var(hedge_returns)
 
     beta_val = cov_SH / var_H
+    beta_val = round(beta_val)
+
+    if beta_val < 0:
+        beta_val = 0
 
     cprint(f"Beta: {beta_val}", 'light_green', 'on_blue')
 
@@ -40,7 +44,7 @@ def beta(info, hedge_coin, coin):
 def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short):
 
     while True:
-        time.sleep(0.4)
+        time.sleep(0.4) # 16 req/loop * 100 loop/min = 1600 weight/min; 16 req/loop * 60 loop/min = 960 w/m < 1200 weigh/min limit
         spot_balances = post_user_spot_tokens(acc_address, info)
         futures_positions = post_user_futures_summary(neu_address, info)
         futes_value = 0
@@ -58,7 +62,7 @@ def trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short
                 spot_sz = float(balance["total"])
                 break
 
-        leverage = round(beta(info, hedge_coin, "PURR/USDC"))
+        leverage = beta(info, hedge_coin, coin)
         futes_px, spot_px = allMids(info, hedge_coin, coin)
         spot_value = spot_sz * spot_px
 

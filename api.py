@@ -32,7 +32,7 @@ def allMids(info, hedge_coin, coin):
         coin_mid = float(mids.get(coin))
         return hedge_mid, coin_mid 
 
-def candles_snapshot(hedge_coin, spot_coin, interval, info):
+def candles_snapshot(info, hedge_coin, spot_coin, interval):
     end = int(time.time() * 1000)
     start = end - (1000 * 60 * 60 * 24 * 30)
     hedge_candles = info.candles_snapshot(hedge_coin, interval, start, end)
