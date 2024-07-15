@@ -1,12 +1,14 @@
-from utils import setup
-from config import url, coin, hedge_coin, test_url, coin_short
-from trade import trade
-from api import allMids
+from tools.config import url, coin, testUrl, coinShort
+from models.defaults import hyperInvRiskDefaults
+from trading.trade import trade
+from calc.beta import betaScanner
 
 
 
 
 def main():
-    account, acc_address, neu_address, info, exchange = setup(url, prod = True)
-    trade(info, exchange, coin, hedge_coin, acc_address, neu_address, coin_short)
+    hyperClass = hyperInvRiskDefaults(url)
+    bestBeta = betaScanner(hyperClass, coin)
+    # trade(hyperClass, coin, bestBeta, coinShort)
+    
 main()
