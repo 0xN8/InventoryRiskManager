@@ -46,7 +46,7 @@ def marketClose(hyperClass, coin):
 def closeOpenOrders(hyperClass, coin):
 
     cancelOrders = []
-    openOrders = hyperClass.info.open_orders(hyperClass.neuAddress)
+    openOrders = hyperClass.info.open_orders(hyperClass.hedgeAddress)
     if len(openOrders) == 0:
         return
     

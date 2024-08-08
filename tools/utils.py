@@ -13,24 +13,26 @@ def parseParameters(parameters, prod):
             apiKey = parameter['Value']
         elif parameter['Name'] == '/HyperLiquid/prod/account-address':
             accAddress = parameter['Value']
-        elif parameter['Name'] == '/HyperLiquid/prod/neu-address':
-            neuAddress = parameter['Value']
-    return apiKey, accAddress, neuAddress
+        elif parameter['Name'] == '/HyperLiquid/prod/mm_address':
+            makerAddress = parameter['Value']
+        elif parameter['Name'] == '/HyperLiquid/prod/neu-address': #neu address is the Inv manager address
+            hedgeAddress = parameter['Value']
+    return apiKey, accAddress, makerAddress, hedgeAddress
 
 
 def setup(url, prod):
     parameters = get_env()
-    apiKey, accAddress, neuAddress = parseParameters(parameters, prod)
+    apiKey, accAddress, makerAddress, hedgeAddress = parseParameters(parameters, prod)
     account: LocalAccount = eth_account.Account.from_key(apiKey)
     info = Info(url, skip_ws= True)
-    exchange = Exchange(account, url, vault_address=neuAddress)
+    exchange = Exchange(account, url, vault_address=hedgeAddress)
 
 
-    # Set address to the api address if no wallet is provided
+    # Set address to the main account address (Farmer) if no maker address is provided
     if accAddress == "":
         accAddress = account.address
 
-    return account, accAddress, neuAddress, info, exchange
+    return account, accAddress, makerAddress, hedgeAddress, info, exchange
 
 
 # def elapsed_time():

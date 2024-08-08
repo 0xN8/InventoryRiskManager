@@ -13,7 +13,9 @@ def get_env():
             '/Inventory-Risk-Manager/dev/api',
             '/Inventory-Risk-Manager/prod/api',
             '/HyperLiquid/prod/account-address',
-            '/HyperLiquid/prod/neu-address'
+            '/HyperLiquid/prod/mm_address',
+            '/HyperLiquid/prod/neu-address' #neu address is the Inv manager address
+
 
         ],
         WithDecryption=True
