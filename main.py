@@ -1,6 +1,6 @@
 from tools.config import coin, coinShort, url, testUrl, wsUrl, wsTestUrl
 from models.defaults import hyperInvRiskDefaults
-from trading.trade import trade, hedge_thread
+from trading.trade import  hedge_thread
 from calc.beta import betaScanner
 
 

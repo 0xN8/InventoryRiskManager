@@ -4,7 +4,7 @@ from tools.api import allMids
 def futuresOrder(hyperClass, hedgeCoin, isBuy, qty, px, reduceOnly):
 
 
-    orderResult = hyperClass.exchange.order(hedgeCoin, isBuy, qty, px, {"limit": {"tif": "Alo"}}, reduceOnly)
+    orderResult = hyperClass.exchange.order(hedgeCoin, isBuy, float(qty), float(px), {"limit": {"tif": "Alo"}}, reduceOnly)
     if orderResult["status"] == "ok":
         status = orderResult["response"]["data"]["statuses"][0]
         if 'error' in status:
@@ -13,7 +13,7 @@ def futuresOrder(hyperClass, hedgeCoin, isBuy, qty, px, reduceOnly):
             while('Post only order would have immediately matched' in errorMessage):
                 print("Trying to resubmit order...")
                 hedgeMid = allMids(hyperClass, hedgeCoin, None)
-                orderResult = hyperClass.exchange.order(hedgeCoin, isBuy, qty, int(hedgeMid)-1 if isBuy else int(hedgeMid)+1, {"limit": {"tif": "Alo"}}, reduceOnly)
+                orderResult = hyperClass.exchange.order(hedgeCoin, isBuy, float(qty), float(hedgeMid), {"limit": {"tif": "Alo"}}, reduceOnly)
                 status = orderResult["response"]["data"]["statuses"][0]
                 if 'error' in status:
                     errorMessage = status['error']

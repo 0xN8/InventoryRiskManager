@@ -1,13 +1,13 @@
 from trading.futures import futuresOrder, updateLeverage, closeOpenOrders
 from tools.config import coin, coinShort, wsUrl
-from tools.api import postUserSpotTokens, postUserFuturesSummary, subscribe, heartbeatSub
+from tools.api import postUserSpotTokens, postUserFuturesSummary, subscribe, heartbeatSub, candlesSnapshot
 from termcolor import cprint
 from decimal import Decimal
-import time, collections, threading, json
+import collections, threading, json
 
-spotBalance = collections.deque(maxlen=10)
-futesValue = collections.deque(maxlen=10)
-futesSize = collections.deque(maxlen=10)
+spotBalance = collections.deque([0],maxlen=10)
+futesValue = collections.deque([0],maxlen=10)
+futesSize = collections.deque([0],maxlen=10)
 hedgeCandles = collections.deque(maxlen=10)
 spotCandles = collections.deque(maxlen=10)
 
@@ -29,12 +29,12 @@ def spotFillsSubCallback(ws, data):
             if fill['side'] == 'A':
                 appendSz = -1*Decimal(fill['sz'])
                 spotBalance.append(spotBalance[-1] + appendSz)
-                cprint(f"Spot Balance: {spotBalance[-1]}", 'light_green', 'on_blue')
+                cprint(f"Spot Balance -- {spotBalance[-1]}", 'light_green', 'on_blue')
                 hedge()
             else:
                 appendSz = Decimal(fill['sz']) - Decimal(fill['fee'])
                 spotBalance.append(spotBalance[-1] + appendSz)
-                cprint(f"Spot Balance: {spotBalance[-1]}", 'light_green', 'on_blue')
+                cprint(f"Spot Balance -- {spotBalance[-1]}", 'light_green', 'on_blue')
                 hedge()
 
     
@@ -52,21 +52,21 @@ def hedgeFillsSubCallback(ws, data):
     fills = data['data']['fills']
 
     for fill in fills:
-        if fill['coin'] == coin:
+        if fill['coin'] == globalBestBeta['coin']:
             if fill['side'] == 'B':
                 appendVal = -1*Decimal(fill['sz'])*Decimal(fill['px'])
                 appendSz = -1*Decimal(fill['sz'])
                 futesValue.append(futesValue[-1] + appendVal)
                 futesSize.append(futesSize[-1] + appendSz)
                 cprint(f"Futures Value: ${futesValue[-1]}", 'light_green', 'on_blue')
-                cprint(f"Futures Size: {futesSize[-1]}", 'light_green', 'on_blue')
+                cprint(f"Futures Size -- {futesSize[-1]}", 'light_green', 'on_blue')
             else:
                 appendVal = Decimal(fill['sz'])*Decimal(fill['px'])
                 appendSz = Decimal(fill['sz'])
                 futesValue.append(futesValue[-1] + appendVal)
                 futesSize.append(futesSize[-1] + appendSz)
                 cprint(f"Futures Value: ${futesValue[-1]}", 'light_green', 'on_blue')
-                cprint(f"Futures Size: {futesSize[-1]}", 'light_green', 'on_blue')
+                cprint(f"Futures Size: -- {futesSize[-1]}", 'light_green', 'on_blue')
 
 
 
@@ -104,22 +104,22 @@ def spotCandleSubCallback(ws, data):
 
 def hedge():
     cprint("Hedging...", 'light_cyan', 'on_dark_grey')
-    cprint(f"Spot Current Value: ${spotBalance[-1] * spotCandles[-1]["c"]}", 'light_green', 'on_blue')
-    cprint(f"Futures Current Value: ${(futesValue[-1] - hedgeCandles[-1]["c"] * futesSize[-1]) + futesValue[-1]}", 'light_green', 'on_blue')
+    cprint(f"Spot Current Value: ${spotBalance[-1] * Decimal(spotCandles[-1]['c'])}", 'light_green', 'on_blue')
+    cprint(f"Futures Current Value: ${(futesValue[-1] - Decimal(hedgeCandles[-1]['c']) * futesSize[-1]) + futesValue[-1]}", 'light_green', 'on_blue')
 
     leverage = globalBestBeta['beta'] if globalBestBeta['beta'] <= globalBestBeta['maxLeverage'] else globalBestBeta['maxLeverage']
     excess = Decimal(1.2)
     shortage = Decimal(0.8)
 
 
-    if (futesValue[-1] - Decimal(hedgeCandles[-1]["c"]) * futesSize[-1]) + futesValue[-1]  > excess * leverage * spotBalance[-1] * spotCandles[-1]["c"]: #current futes value > 110% * beta * spot value
+    if (futesValue[-1] - Decimal(hedgeCandles[-1]["c"]) * futesSize[-1]) + futesValue[-1]  > excess * leverage * spotBalance[-1] * Decimal(spotCandles[-1]["c"]): #current futes value > 110% * beta * spot value
         # Update Leverage
         if leverage > 1:
             updateLeverage(globalHyperClass, globalBestBeta['coin'], round(leverage), False)
 
         qty = round((((futesValue[-1] - Decimal(hedgeCandles[-1]["c"])  * futesSize[-1]) + futesValue[-1]) - leverage * spotBalance[-1] * Decimal(spotCandles[-1]["c"])) / Decimal(hedgeCandles[-1]["c"]) , globalBestBeta['szDecimals']) #(current futes value - beta * spot value)/hedge price
         cprint(f"Qty to reduce: {qty}", 'light_green', 'on_blue')
-        cprint(f"@ px: {hedgeCandles[-1]["c"]}", 'light_green', 'on_blue')
+        cprint(f"@ px: {hedgeCandles[-1]['c']}", 'light_green', 'on_blue')
         #cancel all open orders and submit new order
         closeOpenOrders(globalHyperClass, globalBestBeta['coin'])
         futuresOrder(globalHyperClass, globalBestBeta['coin'], True, qty, Decimal(hedgeCandles[-1]["c"]), True)
@@ -132,7 +132,7 @@ def hedge():
 
         qty = round((leverage * spotBalance[-1] * Decimal(spotCandles[-1]["c"]) - ((futesValue[-1] - Decimal(hedgeCandles[-1]["c"]) * futesSize[-1]) + futesValue[-1])) / Decimal(hedgeCandles[-1]["c"]), globalBestBeta['szDecimals']) #(current futes value - beta * spot value)/hedge price
         cprint(f"Qty to add: {qty}", 'light_green', 'on_blue')
-        cprint(f"@ px: {hedgeCandles[-1]["c"]}", 'light_green', 'on_blue')
+        cprint(f"@ px: {hedgeCandles[-1]['c']}", 'light_green', 'on_blue')
         #cancel all open orders and submit new order
         closeOpenOrders(globalHyperClass, globalBestBeta['coin'])
         futuresOrder(globalHyperClass, globalBestBeta['coin'], False, qty, Decimal(hedgeCandles[-1]["c"]), False)
@@ -164,13 +164,20 @@ def hedge_thread(hyperClass, bestBeta):
             futesSize.append(Decimal(fute["position"]['szi'])*-1) #size of position
             break
 
-    cprint(f"Spot Balance: {spotBalance[-1]}", 'light_green', 'on_blue')
+    cprint(f"Spot Balance -- {spotBalance[-1]}", 'light_green', 'on_blue')
     cprint(f"Futures Value: ${futesValue[-1]}", 'light_green', 'on_blue')
+
+    spotCandle = candlesSnapshot(hyperClass, coin, "5m", 1)
+    hedgeCandle = candlesSnapshot(hyperClass, bestBeta["coin"], "5m", 1)
+
+    spotCandles.append(spotCandle[0])
+    hedgeCandles.append(hedgeCandle[0])
+
 
     spotFillsThread = threading.Thread(target = subscribe, args = ({"type": "userFills","user": hyperClass.makerAddress}, spotFillsSubCallback, wsUrl))
     hedgeFillsThread = threading.Thread(target = subscribe, args = ({"type": "userFills","user": hyperClass.hedgeAddress}, hedgeFillsSubCallback, wsUrl))
-    hedgeCandlesThread = threading.Thread(target = subscribe, args = ({"type": "candles","coin": bestBeta["coin"],"interval": "5m"}, hedgeCandleSubCallback, wsUrl))
-    spotCandlesThread = threading.Thread(target = subscribe, args = ({"type": "candles","coin": coinShort,"interval": "5m"}, spotCandleSubCallback, wsUrl))
+    hedgeCandlesThread = threading.Thread(target = subscribe, args = ({"type": "candle","coin": bestBeta["coin"],"interval": "5m"}, hedgeCandleSubCallback, wsUrl))
+    spotCandlesThread = threading.Thread(target = subscribe, args = ({"type": "candle","coin": coin,"interval": "5m"}, spotCandleSubCallback, wsUrl))
 
 
     spotFillsThread.start()

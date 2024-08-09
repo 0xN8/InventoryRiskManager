@@ -66,7 +66,6 @@ def heartbeatSub(args, callback, url):
 def postUserSpotTokens(hyperClass):
     userState = hyperClass.info.spot_user_state(hyperClass.makerAddress)
   
-    print("User Balances: ", userState['balances'])
     return userState["balances"]
 
 
@@ -74,21 +73,20 @@ def postUserSpotTokens(hyperClass):
 def postUserFuturesSummary(hyperClass):
     userState = hyperClass.info.user_state(hyperClass.hedgeAddress)
 
-    print("User Futures Summary: ", userState['assetPositions'])
     return userState['assetPositions']
 
 
 
-# def allMids(hyperClass, hedgeCoin, coin):
-#     mids = hyperClass.info.all_mids()
+def allMids(hyperClass, hedgeCoin, coin):
+    mids = hyperClass.info.all_mids()
 
-#     if coin == None:
-#         hedgeMid = Decimal(mids.get(hedgeCoin))
-#         return hedgeMid
-#     else: 
-#         hedgeMid = Decimal(mids.get(hedgeCoin))
-#         coinMid = Decimal(mids.get(coin))
-#         return hedgeMid, coinMid
+    if coin == None:
+        hedgeMid = Decimal(mids.get(hedgeCoin))
+        return hedgeMid
+    else: 
+        hedgeMid = Decimal(mids.get(hedgeCoin))
+        coinMid = Decimal(mids.get(coin))
+        return hedgeMid, coinMid
     
 
 #candle snapshot in ascending order

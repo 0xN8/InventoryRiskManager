@@ -8,7 +8,7 @@ import numpy as np
 def calcReturns(candles):
     candleReturns = []
     for candle in candles:
-        candleReturns.append((Decimal(candle['c']) - Decimal(candle['o'])) / Decimal(candle['o']))
+        candleReturns.append(float((Decimal(candle['c']) - Decimal(candle['o'])) / Decimal(candle['o'])))
     return candleReturns
 
 
@@ -28,12 +28,11 @@ def beta(hyperClass, hedgeCoin, spotReturns):
     #     elif len(spotReturns) > len(hedgeReturns):
     #         lenDiff = len(spotReturns) - len(hedgeReturns)
     #         spotReturns = spotReturns[lenDiff:]
-
     covMatrix = np.cov(spotReturns, hedgeReturns)
     covSH = covMatrix[0][1]
     varH = np.var(hedgeReturns)
 
-    betaVal = covSH / varH    
+    betaVal = Decimal(covSH / varH) 
 
     return betaVal
 
@@ -55,13 +54,13 @@ def betaScanner(hyperClass, coin):
             "dayNtlVlm": ctx['dayNtlVlm'],
             "impactPxs": ctx['impactPxs']
         }
-        for coin, ctx in zip(coins, ctxs) if Decimal(ctx['dayNtlVlm']) > 200000
+        for coin, ctx in zip(coins, ctxs) if Decimal(ctx['dayNtlVlm']) > 2000000
     ]
     
-    cprint("Coin Contexts List Created","light_cyan", "dark_grey")
+    cprint("Coin Contexts List Created","light_cyan", "on_dark_grey")
     betaThreshold = 0
     bestBeta = {}
-    spotCandles = candlesSnapshot(hyperClass, coin, "5m", 144)
+    spotCandles = candlesSnapshot(hyperClass, coin, "15m", 48)
     spotReturns = calcReturns(spotCandles)
 
     for coinCtx in coinCtxsList:
